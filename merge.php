@@ -15,11 +15,21 @@ $conflicts = [];
 $markerLen = $argv[4];
 // are we working with the lock file?
 $isLock = strtolower($argv[5]) === 'composer.lock';
+// indentation type to use
+$indentation = '    ';
 
 // grab the contents of each file state
 foreach ($states as $i => $state) {
+	$contents = file_get_contents($argv[$i + 1]);
+
+	// use our file to base the indentation off of;
+	// we ignore the possibility of indentation style changes
+	if ($state === 'ours' && preg_match('/^{\n(\s+)/', $contents, $matches)) {
+		$indentation = $matches[1];
+	}
+
 	// read and parse the composer file
-	$$state = json_decode(file_get_contents($argv[$i + 1]), true);
+	$$state = json_decode($contents, true);
 
 	// check for malformed json
 	if (json_last_error() !== JSON_ERROR_NONE || !is_array($$state)) {
@@ -170,6 +180,13 @@ if (count($conflicts)) {
 		$parts[] = str_repeat('>', $markerLen);
 		return implode("\n", $parts);
 	}, $merged);
+
+	// fix the indentation per the user's preference, except for the lock
+	if (!$isLock && $indentation !== '    ') {
+		$merged = preg_replace_callback('/^(?: {4})+/m', function($matches) use ($indentation) {
+			return str_repeat($indentation, strlen($matches[0]) / 4);
+		}, $merged);
+	}
 }
 
 // update the file
