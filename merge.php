@@ -1,7 +1,9 @@
 #!/usr/bin/env php
 <?php
 
+// placeholder to denote a conflict in a json property
 define('CONFLICT_PLACEHOLDER', '=c=o=n=f=(\d+)=l=i=c=t=');
+// options for json encode
 define('JSON_ENCODE_OPTIONS', JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 // file states
 $states = ['ancestor', 'ours', 'theirs'];
@@ -9,8 +11,10 @@ $states = ['ancestor', 'ours', 'theirs'];
 $void = (object) [];
 // conflicts we have identified
 $conflicts = [];
-// options for json encode
+// length for conflict marker (<<<)
 $markerLen = $argv[4];
+// are we working with the lock file?
+$isLock = strtolower($argv[5]) === 'composer.lock';
 
 // grab the contents of each file state
 foreach ($states as $i => $state) {
@@ -92,8 +96,9 @@ function merge($ancestor, $ours, $theirs) {
 }
 
 // special handling for lock files
-if (strtolower($argv[5]) === 'composer.lock') {
-	$packageKeys = ['packages', 'packages-dev', 'aliases'];
+if ($isLock) {
+	// @todo handle alias property as well
+	$packageKeys = ['packages', 'packages-dev'];
 
 	foreach ($states as $state) {
 		// ensure we don't get a conflict on the content hash
@@ -101,12 +106,11 @@ if (strtolower($argv[5]) === 'composer.lock') {
 
 		// convert package array to assoc array, mapping package name to json-encoded package definition
 		foreach ($packageKeys as $key) {
-			$newArray = [];
+			$packageArray = [];
 			foreach (${$state}[$key] as $package) {
-				// @todo this is different for alias
-				$newArray[$package['name']] = json_encode($package);
+				$packageArray[$package['name']] = json_encode($package);
 			}
-			${$state}[$key] = $newArray;
+			${$state}[$key] = $packageArray;
 		}
 	}
 
@@ -118,25 +122,26 @@ if (strtolower($argv[5]) === 'composer.lock') {
 		// sort the packages
 		ksort($merged[$key]);
 
-		$newArray = [];
+		$packageArray = [];
 		foreach ($merged[$key] as $package) {
 			// if we have a conflict, convert the conflicting values back to package definition arrays
 			if (preg_match('/^' . CONFLICT_PLACEHOLDER . '$/', $package, $matches)) {
 				$conflicts[$matches[1]] = array_map(function($json) {
 					return json_decode($json, true);
 				}, $conflicts[$matches[1]]);
-				$newArray[] = $package;
+				$packageArray[] = $package;
 			}
 			// otherwise just convert the value back to a package definition array
 			else {
-				$newArray[] = json_decode($package, true);
+				$packageArray[] = json_decode($package, true);
 			}
 		}
-		$merged[$key] = $newArray;
+		$merged[$key] = $packageArray;
 	}
 
-	// update the content-hash key
-	$merged['content-hash'] = (count($conflicts) ? 'Merge conflict!' : 'Auto-merged!') . ' Run `composer update --lock` to regenerate';
+	// update the content-hash key with a helpful message
+	$merged['content-hash'] = sprintf(count($conflicts) ? 'Merge conflict! %s after fixing conflict(s)' : 'Auto-merged! %s',
+		'Run `composer update --lock` to regenerate');
 
 	$merged = json_encode($merged, JSON_ENCODE_OPTIONS);
 } else {
