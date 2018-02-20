@@ -126,8 +126,8 @@ if ($isLock) {
 		foreach ($merged[$key] as $package) {
 			// if we have a conflict, convert the conflicting values back to package definition arrays
 			if (preg_match('/^' . CONFLICT_PLACEHOLDER . '$/', $package, $matches)) {
-				$conflicts[$matches[1]] = array_map(function($json) {
-					return json_decode($json, true);
+				$conflicts[$matches[1]] = array_map(function($json) use ($void) {
+					return $json === $void ? $void : json_decode($json, true);
 				}, $conflicts[$matches[1]]);
 				$packageArray[] = $package;
 			}
@@ -150,14 +150,25 @@ if ($isLock) {
 
 // if we have conflicts, replace the conflict markers with the actual conflicting values
 if (count($conflicts)) {
-	$merged = preg_replace_callback('/^(\s+)(.+)"' . CONFLICT_PLACEHOLDER . '"(,?)$/m', function ($matches) use ($conflicts, $markerLen) {
+	$merged = preg_replace_callback('/^(\s+)(.+)"' . CONFLICT_PLACEHOLDER . '"(,?)$/m', function ($matches) use ($conflicts, $markerLen, $void) {
 		list(, $space, $property, $conflictNum, $comma) = $matches;
-		// replace the conflict placeholder with theirs/ours values surrounded by conflict markers
-		return str_repeat('<', $markerLen) . " HEAD\n"
-			. $space . $property . preg_replace('/\n/', "\n$space", json_encode($conflicts[$conflictNum][1], JSON_ENCODE_OPTIONS)) . $comma . "\n"
-			. str_repeat('=', $markerLen) . "\n"
-			. $space . $property . preg_replace('/\n/', "\n$space", json_encode($conflicts[$conflictNum][0], JSON_ENCODE_OPTIONS)) . $comma . "\n"
-			. str_repeat('>', $markerLen);
+		// build the replacement
+		$parts = [];
+		// add opening conflict marker
+		$parts[] = str_repeat('<', $markerLen) . ' HEAD';
+		// add their value, if not void
+		if ($conflicts[$conflictNum][1] !== $void) {
+			$parts[] = $space . $property . preg_replace('/\n/', "\n$space", json_encode($conflicts[$conflictNum][1], JSON_ENCODE_OPTIONS)) . $comma;
+		}
+		// add conflict marker divider
+		$parts[] = str_repeat('=', $markerLen);
+		// add our value, if not void
+		if ($conflicts[$conflictNum][0] !== $void) {
+			$parts[] = $space . $property . preg_replace('/\n/', "\n$space", json_encode($conflicts[$conflictNum][0], JSON_ENCODE_OPTIONS)) . $comma;
+		}
+		// add closing conflict marker
+		$parts[] = str_repeat('>', $markerLen);
+		return implode("\n", $parts);
 	}, $merged);
 }
 
