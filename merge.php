@@ -181,8 +181,8 @@ if (count($conflicts)) {
 		return implode("\n", $parts);
 	}, $merged);
 
-	// fix the indentation per the user's preference, except for the lock
-	if (!$isLock && $indentation !== $defaultIndentation) {
+	// fix the indentation per the user's preference
+	if ($indentation !== $defaultIndentation) {
 		$merged = preg_replace_callback("/^(?:{$defaultIndentation})+/m", function($matches) use ($indentation) {
 			return str_repeat($indentation, strlen($matches[0]) / 4);
 		}, $merged);
