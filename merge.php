@@ -16,7 +16,7 @@ $markerLen = $argv[4];
 // are we working with the lock file?
 $isLock = strtolower($argv[5]) === 'composer.lock';
 // indentation type to use
-$indentation = '    ';
+$indentation = $defaultIndentation = '    ';
 
 // grab the contents of each file state
 foreach ($states as $i => $state) {
@@ -182,8 +182,8 @@ if (count($conflicts)) {
 	}, $merged);
 
 	// fix the indentation per the user's preference, except for the lock
-	if (!$isLock && $indentation !== '    ') {
-		$merged = preg_replace_callback('/^(?: {4})+/m', function($matches) use ($indentation) {
+	if (!$isLock && $indentation !== $defaultIndentation) {
+		$merged = preg_replace_callback("/^(?:{$defaultIndentation})+/m", function($matches) use ($indentation) {
 			return str_repeat($indentation, strlen($matches[0]) / 4);
 		}, $merged);
 	}
