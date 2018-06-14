@@ -14,7 +14,7 @@ $conflicts = [];
 // length for conflict marker (<<<)
 $markerLen = $argv[4];
 // are we working with the lock file?
-$isLock = strtolower($argv[5]) === 'composer.lock';
+$isLock = basename(strtolower($argv[5])) === 'composer.lock';
 // indentation type to use
 $indentation = $defaultIndentation = '    ';
 
