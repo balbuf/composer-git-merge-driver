@@ -1,0 +1,14 @@
+{
+  "name": "balbuf/composer-git-merge-driver",
+  "description": "Merge composer.* files with conflicts.",
+  "keywords": ["composer", "composer.lock", "composer.json", "git", "merge", "conflict"],
+  "type": "library",
+  "bin": ["bin/composer-git-merge-driver"],
+  "authors": [{
+    "name": "Stephen Beemsterboer",
+    "homepage": "https://github.com/balbuf"
+  }],
+  "require": {
+    "php": ">=5.4"
+  }
+}
