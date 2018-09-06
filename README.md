@@ -51,32 +51,30 @@ i.e. you can install the driver globally but only activate it on certain project
 
 ### 1. Download the merge driver.
 
-Download the `merge.php` file from this repo. For example, to download to your home directory:
+Use composer to install the driver into your repo or globally.
 
 ```sh
-$ curl -Lo ~/composer-git-merge-driver.php https://raw.githubusercontent.com/balbuf/composer-git-merge-driver/master/merge.php
+$ composer require --dev balbuf/composer-git-merge-driver
 ```
 
-Make the file executable:
+or 
 
 ```sh
-$ chmod +x ~/composer-git-merge-driver.php
-```
-
-Optionally, you can move the file somewhere in your `$PATH`, e.g.:
-
-```sh
-$ mv ~/composer-git-merge-driver.php /usr/local/bin/composer-git-merge-driver
+$ composer global require balbuf/composer-git-merge-driver
 ```
 
 ### 2. Install the merge driver.
 
-The driver is installed by informing git of its existence via a [git config][git config] file:
+The driver is installed by informing git of its existence via a [git config][git config]
+file. This example assumes that your path includes
+`~/.composer/vendor/bin` (for global installation) or `./vendor/bin`
+(for repo installation.) If that is not so, update the path to the
+driver on the `driver` line.
 
 ```
 [merge "composer_json"]
     name = composer JSON file merge driver
-    driver = ~/composer-git-merge-driver.php %O %A %B %L %P
+    driver = composer-git-merge-driver %O %A %B %L %P
     recursive = binary
 ```
 
