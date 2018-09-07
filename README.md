@@ -3,8 +3,8 @@
 The Composer JSON Git Merge Driver provides a mechanism to more effectively merge
 `composer.json` and `composer.lock` files that have been modified simultaneously
 in separate branches / development histories. The [custom git merge driver][merge driver]
-is activated when the composer JSON files require a merge more complex than a
-simple "fast forward".
+is invoked when the composer JSON files require a merge more complex than a
+simple "fast forward."
 
 ## How it Works
 
@@ -46,30 +46,29 @@ the real hash!
 
 ## Installation
 
-The merge driver can be installed globally or per repo and activated globally or per repo,
+The merge driver can be installed globally or per repo and configured and activated globally or per repo,
 i.e. you can install the driver globally but only activate it on certain projects.
 
-### 1. Download the merge driver.
+### 1. Install the merge driver on your system.
 
-Use composer to install the driver into your repo or globally.
-
-```sh
-$ composer require --dev balbuf/composer-git-merge-driver
-```
-
-or 
+Use composer to install the driver globally:
 
 ```sh
 $ composer global require balbuf/composer-git-merge-driver
 ```
 
-### 2. Install the merge driver.
+or just in a particular repo:
 
-The driver is installed by informing git of its existence via a [git config][git config]
-file. This example assumes that your path includes
-`~/.composer/vendor/bin` (for global installation) or `./vendor/bin`
-(for repo installation.) If that is not so, update the path to the
-driver on the `driver` line.
+```sh
+$ composer require --dev balbuf/composer-git-merge-driver
+```
+
+Note that if you are installing the driver via the latter (per repo) method, this will be added
+to the repo's `composer.json` and thus will be installed as a dependency for all users of the repo.
+
+### 2. Configure the merge driver with git.
+
+The driver is made available for use by informing git of its existence via a [git config][git config] file:
 
 ```
 [merge "composer_json"]
@@ -88,13 +87,15 @@ By default, this allows you to edit the config file for the current repo, meanin
 is only installed locally to the repo. To edit the global config file for your user, append the
 `--global` flag; to edit the system-wide config file, append the `--system` flag.
 
-Copy and paste the block above into the config file and save it. Be sure to update the path if
-you downloaded the file to somewhere other than `~/composer-git-merge-driver.php`. If you moved the
-file somewhere in your `$PATH`, you can simply replace the path with `composer-git-merge-driver`.
+Copy and paste the block above into the config file and save it. This example assumes that your `$PATH`
+includes [Composer's vendor bin][vendor bin] path (by default, `~/.composer/vendor/bin` for global
+installation or `./vendor/bin` for repo installation). If not, be sure to update your `$PATH` or
+add the appropriate path to the binary on the `driver` line.
 
 For more information about git config files, refer to the [git documentation][git config].
 
 [git config]: https://git-scm.com/docs/git-config
+[vendor bin]: https://getcomposer.org/doc/articles/vendor-binaries.md#can-vendor-binaries-be-installed-somewhere-other-than-vendor-bin-
 
 ### 3. Activate the merge driver.
 
@@ -140,7 +141,7 @@ and the merge completed, you can avoid creating an additional commit by amending
 ```sh
 $ composer update --lock
 $ git add composer.lock
-$ git commit --amend
+$ git commit --amend --no-edit
 ```
 
 ## Additional Information
