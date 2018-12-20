@@ -202,7 +202,7 @@ if ($isLock) {
         }
     }
 
-    $merged = json_encode($result, JSON_ENCODE_OPTIONS);
+    $merged = json_encode($merged, JSON_ENCODE_OPTIONS);
 }
 
 // if we have conflicts, replace the conflict markers with the actual conflicting values
