@@ -92,6 +92,12 @@ includes [Composer's vendor bin][vendor bin] path (by default, `~/.composer/vend
 installation or `./vendor/bin` for repo installation). If not, be sure to update your `$PATH` or
 add the appropriate path to the binary on the `driver` line.
 
+In case you installed as project dependendency,
+a convience `.gitconfig` is provided in this repo, which can be installed as:
+```
+$ git config --add include.path $(git rev-parse --show-toplevel)/vendor/balbuf/composer-git-merge-driver/.gitconfig
+```
+
 For more information about git config files, refer to the [git documentation][git config].
 
 [git config]: https://git-scm.com/docs/git-config
