@@ -106,11 +106,11 @@ function merge($ancestor, $ours, $theirs) {
 }
 
 // Sort composer packages
-// adapted from https://github.com/composer/composer/blob/master/src/Composer/Json/JsonManipulator.php#L117-L146
+// adapted from https://github.com/composer/composer/blob/1.8.5/src/Composer/Json/JsonManipulator.php#L117-L146
 function sortPackages(&$packages) {
 	$prefix = function ($requirement) {
-		// value from https://github.com/composer/composer/blob/master/src/Composer/Repository/PlatformRepository.php#L27
-		$platformPackageRegexp = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[^/ ]+)$}i';
+		// value from https://github.com/composer/composer/blob/1.8.5/src/Composer/Repository/PlatformRepository.php#L30
+		$platformPackageRegexp = '{^(?:php(?:-64bit|-ipv6|-zts|-debug)?|hhvm|(?:ext|lib)-[a-z0-9](?:[_.-]?[a-z0-9]+)*|composer-plugin-api)$}iD';
 
 		if (preg_match($platformPackageRegexp, $requirement)) {
 			return preg_replace(
